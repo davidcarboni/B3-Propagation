@@ -1,4 +1,7 @@
-from flask import Flask, jsonify
+"""
+NB: This example requires Flask to run.
+"""
+from flask import Flask, jsonify, request
 import logging
 import b3
 from b3 import span
@@ -7,7 +10,7 @@ from b3 import span
 app = Flask("test")
 
 # Before and after request to process B3 values and log span boundaries
-app.before_request(b3.start_span)
+app.before_request(lambda: b3.start_span(request.headers))
 app.after_request(b3.end_span)
 
 # Set up logging to display trace information
