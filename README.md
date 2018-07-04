@@ -1,8 +1,8 @@
-[![Build Status](https://travis-ci.org/davidcarboni/Flask-B3.svg?branch=master)](https://travis-ci.org/davidcarboni/Flask-B3)
+[![Build Status](https://travis-ci.org/davidcarboni/B3-Propagation.svg?branch=master)](https://travis-ci.org/davidcarboni/B3-Propagation)
 
-# Flask B3
+# B3 Propagation
 
-Implements B3 propagation for Python/Flask.
+Implements B3 propagation for Python.
 
 Does not implement communication with a Zipkin server.
 
@@ -47,22 +47,22 @@ You'll get two things from this implementation:
  * Sub-span headers can be created 
  for propagating trace IDs when making calls to downstream services.
 
-Here are the three steps you'll need to use flask_b3.
+Here are the three steps you'll need to use B3 propagation.
 
 ### Collect B3 headers from an incoming request
 
-This could be called from a Flask `before_request()` function, 
-optionally passing in, say, `request.headers`.
+This could be called from, say, a Flask `before_request()` function, 
+passing in, say, `request.headers`.
 Alternatively, it can be directly passed to `before_request()`. 
 This will generate any needed identifiers 
 (e.g. a new `trace_id` for a root span):
 
-    start_span()
+    app.before_request(lambda: b3.start_span(request.headers))
     
 If you want the end of a span to be logged ("Server Send")
-you can call the following (or pass it directly to `Flask.after_request)`:
+you can call the following (or pass it directly to `Flask.after_request`):
     
-    end_span()
+    app.after_request(b3.end_span)
 
 ### Add headers to onward requests
 
@@ -89,7 +89,14 @@ this gets you a dict with keys that match the B3 header names
     values()
     
 
-## Other stuff?
+## Other stuff
+
+This library has no dependencies.
+It's intended to be straightforward to use with Flask apps, but doesn't require Flask.
+This means that if you're using a different framework, or maybe something like GRPC, you can still handle B3 headers.
+
+
+## Is that it?
 
 Surely it's more complicated, needs configuration, or does this and that else?
 
