@@ -8,28 +8,24 @@ def test_suite():
     return suite
 
 
-setup(name='Flask-B3',
-      version='0.0.7',
-      description='B3 header access and propagation for Flask.',
+setup(name='B3-Propagation',
+      version='0.1.0',
+      description='B3 header access and propagation for Python.',
       author='David Carboni',
       author_email='david@carboni.io',
       classifiers=[
-          'Development Status :: 3 - Alpha',
+          'Development Status :: 4 - Beta',
           'Programming Language :: Python :: 2.7',
           'Programming Language :: Python :: 3.2',
           'Topic :: System :: Logging',
           'Topic :: Internet :: Log Analysis',
           'Intended Audience :: Developers',
-          'Framework :: Flask',
           'License :: OSI Approved :: MIT License',
       ],
       keywords=['logging', 'b3', 'distributed', 'tracing', 'zipkin'],
-      url='https://github.com/rosgovuk/flask_b3',
+      url='https://github.com/davidcarboni/B3-Propagation',
       license='MIT',
       packages=find_packages(),
-      install_requires=[
-          'flask',
-      ],
       test_suite='setup.test_suite',
       include_package_data=True,
       zip_safe=True,
