@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import g, request
+from threading import local
 from binascii import hexlify
 import os
 import logging
@@ -16,6 +16,8 @@ b3_sampled = 'X-B3-Sampled'
 b3_flags = 'X-B3-Flags'
 b3_headers = [b3_trace_id, b3_parent_span_id, b3_span_id, b3_sampled, b3_flags]
 
+b3 = local()
+
 
 def values():
     """Get the full current set of B3 values.
@@ -26,7 +28,7 @@ def values():
     result = {}
     try:
         # Check if there's a sub-span in progress, otherwise use the main span:
-        span = g.get("subspan") if "subspan" in g else g
+        span = b3.subspan if hasattr(b3, "subspan") else b3.span
         for header in b3_headers:
             result[header] = span.get(header)
     except RuntimeError:
@@ -39,20 +41,13 @@ def values():
     return result
 
 
-def start_span(request_headers=None):
+def start_span(headers):
     """Collects incoming B3 headers and sets up values for this request as needed.
     The collected/computed values are stored on the application context g using the defined http header names as keys.
-    :param request_headers: Incoming request headers can be passed explicitly.
-    If not passed, Flask request.headers will be used. This enables you to pass this function to Flask.before_request().
+    :param headers: Incoming request headers. These could be http, or part of a GRPC message.
     """
     global debug
-    try:
-        headers = request_headers if request_headers else request.headers
-    except RuntimeError:
-        # We're probably working outside the Application Context at this point, likely on startup:
-        # https://stackoverflow.com/questions/31444036/runtimeerror-working-outside-of-application-context
-        # We return a dict of empty values so the expected keys are present.
-        headers = {}
+    b3.span = {}
 
     trace_id = headers.get(b3_trace_id)
     parent_span_id = headers.get(b3_parent_span_id)
@@ -62,24 +57,24 @@ def start_span(request_headers=None):
     root_span = not trace_id
 
     # Collect (or generate) a trace ID
-    setattr(g, b3_trace_id, trace_id or _generate_identifier())
+    b3.span[b3_trace_id] = trace_id or _generate_identifier()
 
     # Parent span, if present
-    setattr(g, b3_parent_span_id, parent_span_id)
+    b3.span[b3_parent_span_id] = parent_span_id
 
     # Collect (or set) the span ID
-    setattr(g, b3_span_id, span_id or g.get(b3_trace_id))
+    b3.span[b3_span_id] = span_id or b3.span.get(b3_trace_id)
 
     # Collect the "sampled" flag, if present
     # We'll propagate the sampled value unchanged if it's set.
     # We're not currently recording traces to Zipkin, so if it's present, follow the standard and propagate it,
     # otherwise it's better to leave it out, rather than make it "0".
     # This allows downstream services to make a decision if they need to.
-    setattr(g, b3_sampled, sampled)
+    b3.span[b3_sampled] = sampled
 
     # Set or update the debug setting
     # We'll set it to "1" if debug=True, otherwise we'll propagate it if present.
-    setattr(g, b3_flags, "1" if debug else flags)
+    b3.span[b3_flags] = "1" if debug else flags
 
     _info("Server receive. Starting span" if trace_id else "Root span")
     _log.debug("Resolved B3 values: {values}".format(values=values()))
@@ -87,9 +82,9 @@ def start_span(request_headers=None):
 
 def end_span(response=None):
     """Logs the end of a span.
-    This function can be passed to Flask.after_request() if you'd like a log message to confirm the end of a span.
-    :param response: If this furction is passed to Flask.after_request(), this will be passed by the framework.
-    :return: the response parameter is returned as passed.
+    This function can be passed to, say, Flask.after_request() if you'd like a log message to confirm the end of a span.
+    :param response: Can be None. If this function is passed to Flask.after_request(), this will be passed by the framework.
+    :return: the passed-in response parameter is returned without being accessed.
     """
     _end_subspan()
     _info("Server send. Closing span")
@@ -171,36 +166,36 @@ def _start_subspan(headers=None):
     :return: A dict containing header values for a downstream request.
     This can be passed directly to e.g. requests.get(...).
     """
-    b3 = values()
-    g.subspan = {
+    parent = values()
+    b3.subspan = {
 
         # Propagate the trace ID
-        b3_trace_id: b3[b3_trace_id],
+        b3_trace_id: parent[b3_trace_id],
 
         # Start a new span for the outgoing request
         b3_span_id: _generate_identifier(),
 
         # Set the current span as the parent span
-        b3_parent_span_id: b3[b3_span_id],
+        b3_parent_span_id: parent[b3_span_id],
 
-        b3_sampled: b3[b3_sampled],
-        b3_flags: b3[b3_flags],
+        b3_sampled: parent[b3_sampled],
+        b3_flags: parent[b3_flags],
     }
 
     # Set up headers
     # NB dict() ensures we don't alter the value passed in. Maybe that's too conservative?
     result = dict(headers or {})
     result.update({
-        b3_trace_id: g.subspan[b3_trace_id],
-        b3_span_id: g.subspan[b3_span_id],
-        b3_parent_span_id: g.subspan[b3_parent_span_id],
+        b3_trace_id: b3.subspan[b3_trace_id],
+        b3_span_id: b3.subspan[b3_span_id],
+        b3_parent_span_id: b3.subspan[b3_parent_span_id],
     })
 
     # Propagate only if set:
-    if g.subspan[b3_sampled]:
-        result[b3_sampled] = g.subspan[b3_sampled]
-    if g.subspan[b3_flags]:
-        result[b3_flags] = g.subspan[b3_flags]
+    if b3.subspan[b3_sampled]:
+        result[b3_sampled] = b3.subspan[b3_sampled]
+    if b3.subspan[b3_flags]:
+        result[b3_flags] = b3.subspan[b3_flags]
 
     _info("Client start. Starting sub-span")
     _log.debug("B3 values for sub-span: {b3_headers}".format(b3_headers=values()))
@@ -214,14 +209,9 @@ def _end_subspan():
     You should call this in e.g. a finally block when you have finished making a downstream service call.
     For the specification, see: https://github.com/openzipkin/b3-propagation
     """
-    try:
-        if g.get("subspan"):
-            _info("Client receive. Closing sub-span")
-            g.pop("subspan", None)
-    except RuntimeError:
-        # We're probably working outside the Application Context at this point, likely on startup:
-        # https://stackoverflow.com/questions/31444036/runtimeerror-working-outside-of-application-context
-        pass
+    if hasattr(b3, "subspan"):
+        _info("Client receive. Closing sub-span")
+        delattr(b3, "subspan")
 
 
 def _generate_identifier():
