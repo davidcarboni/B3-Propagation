@@ -5,14 +5,13 @@ python:
 script: pytest
 env:
 - PYTHONPATH=.
-before_deploy: "echo Deploying to Pypi.."
-after_deploy: "echo Deployed to Pypi."
+before_deploy: echo Deploying to Pypi..
+after_deploy: echo Deployed to Pypi.
 deploy:
   provider: pypi
   user: davidcarboni
-  password:
-    secure: HZgd9mVm0hqObhCO70JLMijZM+sw4z7dQWsfLUDfGClW/sZxLl8oEtldriel151kTuo+eHZI9QmJRgbaDha69CJRaE+NZqKxB0GyjXsjOBmUyGHVKbl/XbIo5wrv5ZxAISiIjjNl1css3u3I/R5th6UZ/uPDQdgHw1+bgvCv9FPLHsCss50N3IpnzXQtzBWNsSss57MyAmr60C5s6HYHgGzSCl9htqALOWulZF3sdLpWA9xUCMfd9tWl+6ONPss0b+ZAv1PJwIWzdw6vR8kSVG+o0DxGfl9y/I1ezU4kZqFqfWcgwwUAlr1k/fVBWb5ImT3nGd75s1J+DTJUulnh6yWIlTVakL13ClzQ1V/nFmRSQxonXYMujEp8PwjoMl2XQRySIOHqkFPmqSppIQl2jhghCxaNHV0XQ9m2bmYpI2VzO1Tmpl6VNERSRGQcjxRFg+Nvq28WGMCweki5iqFbb/91EY/EqGlKlcxMaSjDJIW0cafeqCb5NsRITl2Oba6glOxjKlJUu9+qVwlEcV2JpPjmTsDCro7GoHhIV8rc4Dsd9ceLOQycxKQB6SejcgtSy2FhKZEe+UMQOFfXnhARHP9+YZ6K1sUm+OyiPSag3fO5kTH+0Iu4nm2Py2c03mxw/Wc8uzI/0/CFZzM8Cz+ZAx5hbmY3BZHH1GujpmmbNlk=
   on:
     tags: true
     branch: master
-
+  password:
+    secure: K1GWa9j8eBxVF5Z4az3IojKf3u6z3WsDy6oEvgivgUJOAcDOMYD/UtNK6vD9BaKKKIhVC+TP+fPWZ9tn5inWP7K//MJi9EUB/bNsuLY2FNMqMIqLjBhOT9hzreOLnJvaQw3YZ9SzVnJavS+2ZSMNxioQGxRpr5QPh+s46gqoSvhqcveLwC0BDPMC+l2eWsTgp9H7GS8d7Qy1KR51n9kJR6CW1uvoas0TfV0BupHOwBex+RUfbYgWythTiU7Rf2VcBAAXIRNqw4VyMJPt2Xy4UKblvxuMVJJbY5fQTJfD7s4gi9ZvBYJzqXtzczdFAgyXFFd7IHqrEpUzOvlxk5ADC7cp/6tXMKfYwMPzws7384CbehbRo4tJgKX9ZZYH8tJuh+IRO9xtb+yNf8NoQQ2KLwK8bjSRMI5OuxVu8jTnMArhPern4oXfzfkkKyFt3A8SEK/PJKY9HLDVxsZHzmGtglCn/tl0fHzTPLdwo/ZRrDyRaSlo24epaC7Rrp1pWDgDv2dZiQenDEw8fR4MX+8PfnwnPy9RU34qWYInB4wZHZbueK8WANjCErRa9/oOTNY6tIR8867R9TsEhWV//vflFD2JpmHTuWDunrkPjNUOg07vICVOKE3sDOwnS2lvy89Psi33FSr4jAAi8KzHLtuF9nUxqFfplL3G+TjClqEzQAw=
