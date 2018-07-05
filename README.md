@@ -6,6 +6,8 @@ Implements B3 propagation for Python.
 
 Does not implement communication with a Zipkin server.
 
+Available on Pypi: https://pypi.org/project/B3-Propagation/
+
 ## B3
 
 B3 is used by [Zipkin](http://zipkin.io/) for building distributed trace trees.
@@ -94,6 +96,8 @@ this gets you a dict with keys that match the B3 header names
 This library has no dependencies.
 It's intended to be straightforward to use with Flask apps, but doesn't require Flask.
 This means that if you're using a different framework, or maybe something like GRPC, you can still handle B3 headers.
+
+This library is based on https://github.com/daidcarboni/Flask-B3 (https://pypi.org/project/Flask-B3)
 
 
 ## Is that it?
