@@ -27,8 +27,8 @@ def values():
     """
     result = {}
     try:
-        # Check if there's a sub-span in progress, otherwise use the main span:
-        span = b3.subspan if hasattr(b3, "subspan") else b3.span
+        # Check if there's a sub-span in progress, otherwise use the main span, or fall back to an empty hash:
+        span = b3.subspan if hasattr(b3, "subspan") else b3.span if hasattr(b3, "span") else {}
         for header in b3_headers:
             result[header] = span.get(header)
     except RuntimeError:
@@ -135,6 +135,7 @@ class SubSpan:
             ... log.debug("Client receive: downstream service responded")
 
     """
+
     def __init__(self, headers=None):
         self.headers = headers
 
