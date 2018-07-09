@@ -59,12 +59,16 @@ Alternatively, it can be directly passed to `before_request()`.
 This will generate any needed identifiers 
 (e.g. a new `trace_id` for a root span):
 
-    app.before_request(lambda: b3.start_span(request.headers))
-    
+```python
+app.before_request(lambda: b3.start_span(request.headers))
+```
+
 If you want the end of a span to be logged ("Server Send")
 you can call the following (or pass it directly to `Flask.after_request`):
-    
-    app.after_request(b3.end_span)
+
+```python
+app.after_request(b3.end_span)
+```
 
 ### Add headers to onward requests
 
@@ -76,11 +80,12 @@ Once this is done, you'll get subspan IDs returned from `values()`
 This will set up the right B3 values for a sub-span in the trace
 and return a dict containing the headers you'll need for your service call:
 
-    with SubSpan([headers]) as b3_headers:
-        ... log.debug("Calling downstream service...")
-        ... r = requests.get(<downstream service>, headers=b3_headers)
-        ... log.debug("Downstream service responded...")
-    
+```python
+with SubSpan([headers]) as b3_headers:
+    ... log.debug("Calling downstream service...")
+    ... r = requests.get(<downstream service>, headers=b3_headers)
+    ... log.debug("Downstream service responded...")
+```
 
 ### Access B3 values 
 
@@ -88,8 +93,20 @@ When you need to work with tracing information, for example to build log message
 this gets you a dict with keys that match the B3 header names 
 (`X-B3-TraceId`, `X-B3-ParentSpanId`, `X-B3-SpanId`, `X-B3-Sampled` and `X-B3-Flags`) for the current span (or subspan if you've started one): 
 
-    values()
-    
+```python
+values()
+``` 
+
+### Logging Level
+
+By default, the `b3` logger is set to `INFO` and trace messages are logged at this level. 
+Additional debugging information is logged at the `DEBUG` level. 
+
+If you want to switch off the tracing messages then alter the log level as follows 
+
+```python
+logging.getLogger('b3').setLevel('WARNING')
+```
 
 ## Other stuff
 
