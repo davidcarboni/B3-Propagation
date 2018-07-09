@@ -37,4 +37,8 @@ def decorated():
     return jsonify(b3.values())
 
 
+# Update the logging level to show everything:
+logging.basicConfig()
+logging.getLogger("b3").setLevel(logging.DEBUG)
+
 app.run(debug=True)
