@@ -9,7 +9,7 @@ def test_suite():
 
 
 setup(name='B3-Propagation',
-      version='0.1.4',
+      version='0.1.5',
       description='B3 header access and propagation for Python.',
       author='David Carboni',
       author_email='david@carboni.io',

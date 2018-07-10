@@ -1,12 +1,14 @@
 """
 NB: This example requires Flask to run.
 """
-from flask import Flask, jsonify, request
 import logging
+
+from flask import Flask, jsonify, request
+
 import b3
 from b3 import span
 
-
+b3.trace_len = 32
 app = Flask("test")
 
 # Before and after request to process B3 values and log span boundaries

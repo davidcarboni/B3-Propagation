@@ -1,14 +1,17 @@
-from functools import wraps
-
-from threading import local
-from binascii import hexlify
-import os
 import logging
+import os
+from binascii import hexlify
+from functools import wraps
+from threading import local
 
 _log = logging.getLogger(__name__)
 _log.setLevel(logging.INFO)
 
+# config
 debug = False
+trace_len = 16
+span_len = 16
+
 
 b3_trace_id = 'X-B3-TraceId'
 b3_parent_span_id = 'X-B3-ParentSpanId'
@@ -58,13 +61,13 @@ def start_span(headers):
     root_span = not trace_id
 
     # Collect (or generate) a trace ID
-    b3.span[b3_trace_id] = trace_id or _generate_identifier()
+    b3.span[b3_trace_id] = trace_id or _generate_identifier(trace_len)
 
     # Parent span, if present
     b3.span[b3_parent_span_id] = parent_span_id
 
     # Collect (or set) the span ID
-    b3.span[b3_span_id] = span_id or b3.span.get(b3_trace_id)
+    b3.span[b3_span_id] = span_id or _generate_identifier(span_len)
 
     # Collect the "sampled" flag, if present
     # We'll propagate the sampled value unchanged if it's set.
@@ -175,7 +178,7 @@ def _start_subspan(headers=None):
         b3_trace_id: parent[b3_trace_id],
 
         # Start a new span for the outgoing request
-        b3_span_id: _generate_identifier(),
+        b3_span_id: _generate_identifier(span_len),
 
         # Set the current span as the parent span
         b3_parent_span_id: parent[b3_span_id],
@@ -216,12 +219,12 @@ def _end_subspan():
         delattr(b3, "subspan")
 
 
-def _generate_identifier():
+def _generate_identifier(identifier_length):
     """
     Generates a new, random identifier in B3 format.
     :return: A 64-bit random identifier, rendered as a hex String.
     """
-    bit_length = 64
+    bit_length = identifier_length * 4
     byte_length = int(bit_length / 8)
     identifier = os.urandom(byte_length)
     return hexlify(identifier).decode('ascii')
