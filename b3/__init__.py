@@ -67,7 +67,7 @@ def start_span(headers):
     b3.span[b3_parent_span_id] = parent_span_id
 
     # Collect (or set) the span ID
-    b3.span[b3_span_id] = span_id or b3.span.get(b3_trace_id)
+    b3.span[b3_span_id] = span_id or _generate_identifier(span_len)
 
     # Collect the "sampled" flag, if present
     # We'll propagate the sampled value unchanged if it's set.
