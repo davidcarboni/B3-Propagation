@@ -108,6 +108,15 @@ If you want to switch off the tracing messages then alter the log level as follo
 logging.getLogger('b3').setLevel('WARNING')
 ```
 
+### Change Trace/Span character length
+
+By default, both `trace` and `span` identifiers generated will be a 16-character hexadecimal encoding of an 8-byte array, as determined by the `trace_len` and `span_len` parameters.
+In some cases you may wish to change this. 
+For example, the Stackdriver Trace API expects the `trace` id to be 32 characters and the `span` id to be 16, do this as follows
+```
+b3.trace_len = 32
+```
+
 ## Other stuff
 
 This library has no dependencies.
